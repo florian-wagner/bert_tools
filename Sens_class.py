@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """
+Sens_class
 Created on Wed Sep 12 11:49:11 2012
 by fwagner@gfz-potsdam.de
 """
