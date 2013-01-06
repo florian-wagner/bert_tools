@@ -3,7 +3,7 @@
 BERT TOOLS
 ==========
 
-Collection of useful functions for BERT interaction
+Personal collection of useful functions for the usage with GIMLI/BERT.
 
 Created on Thu Jun 28 11:49:15 2012
 by fwagner@gfz-potsdam.de
