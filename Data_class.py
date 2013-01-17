@@ -23,10 +23,6 @@ class Data:
         elecs_dim = len(elecs_str.rsplit()) - 1
         elecs_ix = elecs_str.rsplit()[1:]
 
-        print "  Number of electrodes: %s" % elecs_count
-        print "  Dimension: %s" % elecs_dim
-        print "  Coordinates: %s \n" % elecs_str
-
         self.elecs = np.zeros((elecs_count, elecs_dim), 'float')
         for i in range(elecs_count):
             line = file.readline()
@@ -37,9 +33,14 @@ class Data:
         data_dim = len(data_str.rsplit()) - 1
         data_ix = data_str.rsplit()[1:]
         
-        print "  Number of data points: %s" % data_count
-        print "  Data header: %s" % data_str
-
+        self._string_ = """
+        Number of electrodes: %s
+        Dimension: %s
+        Coordinates: %s 
+        Number of data points: %s
+        Data header: %s
+        """ % (elecs_count, elecs_dim, elecs_str, data_count, data_str)
+        
         self.data = np.zeros((data_count, data_dim), 'float')
         for i in range(data_count):
             line = file.readline()
@@ -49,3 +50,8 @@ class Data:
         
         self.data = pd.DataFrame(self.data, columns=data_ix)
         self.elecs = pd.DataFrame(self.elecs, columns=elecs_ix)
+        
+        print self._string_
+    
+    def __str__(self):
+        return self._string_
