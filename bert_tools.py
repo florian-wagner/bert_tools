@@ -86,6 +86,13 @@ def read_ohm(filename):
 
     return elecs_pos, data
 
+def load_constraint_matrix(fname):
+    """ Load constraint matrix in sparse format """
+    global mesh
+    i, j, data = np.loadtxt(fname, unpack=True, dtype=int)
+    C = coo_matrix((data, (i,j)), shape=(mesh.boundaryCount(), mesh.cellCount()), dtype=int)
+    return C
+
 def loadsens(sensname):
     """
        Load sensitivity matrix from BERT binary file.
