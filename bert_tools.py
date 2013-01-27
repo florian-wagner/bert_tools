@@ -15,7 +15,7 @@ import itertools
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
-
+from scipy.sparse import coo_matrix
 
 def abmn(n):
     """
