@@ -10,7 +10,8 @@ by fwagner@gfz-potsdam.de
 import time
 
 
-def start():
+def start(string="Starting computation..."):
+    print string
     global t_0
     t_0 = time.time()
 
