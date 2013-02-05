@@ -97,6 +97,7 @@ def loadsens(sensname):
     """
        Load sensitivity matrix from BERT binary file.
     """
+    print "Loading %s... \n" % sensname
     fid = open(sensname,'rb')
     ndata = np.fromfile(fid, 'int32', 1); ndata = int(ndata[0])
     nmodel = np.fromfile(fid, 'int32', 1); nmodel = int(nmodel[0])
@@ -104,10 +105,25 @@ def loadsens(sensname):
 
     for i in range(ndata):
         S[i,:] = np.fromfile(fid,'float',nmodel)
-    print sensname + " loaded."
-    print "Number of ABMNs: %s" % ndata
-    print "Number of cells: %s" % nmodel
+    print "  Number of ABMNs: %s" % ndata
+    print "  Number of cells: %s \n" % nmodel
+    print "%s loaded. (Size: %.2f GB)\n" % (sensname, 9.31323e-10 * S.nbytes)
     return S
+
+def logdrop(data, lim=1e-3, normalize=False):
+    """ Scale data logarithmically, maintain polarity, remove absolute values
+        smaller lim and normalize everything to to the maximum value.
+    """
+ 
+    data = np.asarray(data)
+    sign = np.sign(data)  # keep polarity
+    data = np.abs(data) 
+    data /= data.max()
+    data /= lim
+    data[data < 1] = 1
+    data = np.log10(data)
+    
+    return data / data.max() * sign
 
 def pole_pole(n,c,p, reciprocal=False):
     """Return (reciprocal) complete pole-pole data set for n electrodes"""
