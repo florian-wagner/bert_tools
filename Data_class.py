@@ -18,17 +18,17 @@ class Data:
         print "Reading in %s... \n" % filename
         file = open(filename)
 
-        elecs_count = int(file.readline())
+        self.eleccount = int(file.readline())
         elecs_str = file.readline()
         elecs_dim = len(elecs_str.rsplit()) - 1
         elecs_ix = elecs_str.rsplit()[1:]
 
-        self.elecs = np.zeros((elecs_count, elecs_dim), 'float')
-        for i in range(elecs_count):
+        self.elecs = np.zeros((self.eleccount, elecs_dim), 'float')
+        for i in range(self.eleccount):
             line = file.readline()
             self.elecs[i] = line.rsplit()
 
-        data_count = int(file.readline())
+        self.datacount = int(file.readline())
         data_str = file.readline()
         data_dim = len(data_str.rsplit()) - 1
         data_ix = data_str.rsplit()[1:]
@@ -39,10 +39,10 @@ class Data:
         Coordinates: %s 
         Number of data points: %s
         Data header: %s
-        """ % (elecs_count, elecs_dim, elecs_str, data_count, data_str)
+        """ % (self.eleccount, elecs_dim, elecs_str, self.datacount, data_str)
         
-        self.data = np.zeros((data_count, data_dim), 'float')
-        for i in range(data_count):
+        self.data = np.zeros((self.datacount, data_dim), 'float')
+        for i in range(self.datacount):
             line = file.readline()
             self.data[i] = line.rsplit()
         

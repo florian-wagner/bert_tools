@@ -125,7 +125,7 @@ def logdrop(data, lim=1e-3, normalize=False):
     
     return data / data.max() * sign
 
-def pole_pole(n,c,p, reciprocal=False):
+def pole_pole(n, c=0, p=0, reciprocal=False):
     """Return (reciprocal) complete pole-pole data set for n electrodes"""
     combs = list(itertools.combinations(range(1,n+1),2))
     confs = []
