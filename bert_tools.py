@@ -125,6 +125,21 @@ def logdrop(data, lim=1e-3, normalize=False):
     
     return data / data.max() * sign
 
+def pdense(x, y, sigma, M=1000):
+    """ Plot probability density of y with known stddev sigma
+    """
+    assert len(x) == len(y) and len(x) == len(sigma)
+    N = len(x)
+    # TODO: better y ranging
+    ymin, ymax = min(y - 2 * sigma), max(y + 2 * sigma)
+    yy = np.linspace(ymin, ymax, M)
+    a = [np.exp(-((Y - yy) / s) ** 2) / s for Y, s in zip(y, sigma)]
+    A = np.array(a)
+    A = A.reshape(N, M)
+    plt.imshow(-A.T, cmap='gray', aspect='auto',
+               origin='lower', extent=(min(x), max(x), ymin, ymax))
+    plt.title('Density plot')
+
 def pole_pole(n, c=0, p=0, reciprocal=False):
     """Return (reciprocal) complete pole-pole data set for n electrodes"""
     combs = list(itertools.combinations(range(1,n+1),2))
