@@ -17,11 +17,13 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 from scipy.sparse import coo_matrix
 
+test
+
 def abmn(n):
     """
        Construct all possible ABMN configurations for a given
        numer of sensors after Noel and Xu (1991)
-    """
+   """
     combs = np.array(list(itertools.combinations(range(1,n+1),4)))
     perms = np.empty(((n*(n-3)*(n-2)*(n-1)/8),4),'int')
     for i in range(np.size(combs,0)):
@@ -140,7 +142,7 @@ def pdense(x, y, sigma, M=1000):
                origin='lower', extent=(min(x), max(x), ymin, ymax))
     plt.title('Density plot')
 
-def pole_pole(n, c=0, p=0, reciprocal=False):
+def pole_pole(n, c=0, p=0, reciprocal=False, skip=None):
     """Return (reciprocal) complete pole-pole data set for n electrodes"""
     combs = list(itertools.combinations(range(1,n+1),2))
     confs = []
@@ -149,7 +151,15 @@ def pole_pole(n, c=0, p=0, reciprocal=False):
         if reciprocal:
             confs.append((comb[1], c, comb[0], p))
     print "%s configurations generated." % len(confs)
-    return np.asarray(confs, dtype='int')
+
+    confs = np.asarray(confs, dtype='int')
+
+    if skip:
+        idx = np.abs(confs[:,0] - confs[:,2]) > skip
+        confs = confs[idx]
+        print "%s configurations after skipping." % len(confs)
+
+    return confs
 
 def pole_bipole(n,c):
     """Return complete pole-bipole data set for n electrodes"""
@@ -164,7 +174,7 @@ def pole_bipole(n,c):
        
 def plotdata(mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
              cmax=None, xlab='x (m)', ylab='depth (m)', clab='', title='',
-             elecs=True, grid=True, bounds=False):
+             elecs=True, grid=True, bounds=False, orientation='vertical'):
     """
      Plot finite element data on triangular mesh
     """
@@ -185,7 +195,7 @@ def plotdata(mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
     patches = mpl.collections.PolyCollection(polys)
     patches.set_antialiased(True)
     if grid:
-        patches.set_linewidth(0.3)
+        patches.set_linewidth(0.1)
         patches.set_edgecolor('0.5')
     else:
         patches.set_edgecolor('face')
@@ -234,7 +244,7 @@ def plotdata(mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
         plt.plot(el_pos[:, 0], el_pos[:, 1], 'wo')
 
     # Colorbar settings
-    cbar = fig.colorbar(patches)
+    cbar = fig.colorbar(patches, orientation=orientation)
     cbar.set_label('\n' + clab)
 
     plt.title(title + '\n')
