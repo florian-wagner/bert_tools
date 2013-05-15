@@ -82,9 +82,11 @@ def das2ohm(input, output='data.ohm', verbose=True):
 
     file.close()
 
+    #TODO: express error relative to resistance value
+
     das_tokens = ['A', 'B', 'M', 'N', 'V/I,', 'err']
-    bert_tokens = ['a', 'b', 'm', 'n', 'r(Ohm)', 'err(Ohm)']
-    fmt = ['%4d', '%4d', '%4d', '%4d', '%5e', '%5e']
+    bert_tokens = ['a', 'b', 'm', 'n', 'r', 'err/Ohm']
+    fmt = ['%d', '%d', '%d', '%d', '%e', '%e']
 
     if verbose:
         print '  Number of electrodes found:', len(elec)
@@ -99,14 +101,16 @@ def das2ohm(input, output='data.ohm', verbose=True):
     # Writing BERT output
     file = open(output, 'w')
     file.write(str(len(elec)) + '\n')
-    file.write('# %7s %9s %9s \n' % ('x', 'y', 'z'))
+    file.write('# %s %s %s \n' % ('x', 'y', 'z'))
     for pos in elec:
-        file.write('%9.3f %9.3f %9.3f \n' % tuple(pos))
+        for coord in pos:
+            file.write('%.2f' % coord + '\t')
+        file.write('\n')
     file.write(str(len(data)) + '\n')
-    file.write('# %2s \t %3s \t %3s \t %3s \t %12s \t %12s \n' % tuple(bert_tokens))
+    file.write('# %s %s %s %s %s %s \n' % tuple(bert_tokens))
     for d in data:
         for ix, t in enumerate(das_tokens):
-            file.write(fmt[ix] % d[found_tokens[t]] + ' ' * 4)
+            file.write(fmt[ix] % d[found_tokens[t]] + '\t')
         file.write('\n')
 
     file.close()
