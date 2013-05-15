@@ -17,13 +17,12 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 from scipy.sparse import coo_matrix
 
-test
 
 def abmn(n):
     """
        Construct all possible ABMN configurations for a given
        numer of sensors after Noel and Xu (1991)
-   """
+    """
     combs = np.array(list(itertools.combinations(range(1,n+1),4)))
     perms = np.empty(((n*(n-3)*(n-2)*(n-1)/8),4),'int')
     for i in range(np.size(combs,0)):
@@ -31,6 +30,93 @@ def abmn(n):
         perms[1+i*3,:] = (combs[i,0],combs[i,3],combs[i,1],combs[i,2]) #AMNB
         perms[2+i*3,:] = (combs[i,0],combs[i,2],combs[i,1],combs[i,3]) #AMBN
     return perms
+
+def area(a, b, c):
+    """ Return area of triangle given the position vectors of corner points """
+    area = 0.5 * np.linalg.norm(np.cross(b-a, c-a))
+    return area
+
+def das2ohm(input, output='data.ohm', verbose=True):
+    """ Reads DAS-1 output and writes ohm-file for BERT """
+
+    # Reading DAS-1 format
+    if verbose: print 'Reading in', input, '... \n'
+    file = open(input)
+
+    elec_read, data_read = False, False
+    elec, data = [], []
+    known_tokens = {'ID': int, 'A': int, 'B': int, 'M': int, 'N': int,
+                    'Appres': float, 'V/I,': float}
+
+    for i, line in enumerate(file):
+        if line.startswith('#'):
+            if 'elec_start' in line: elec_read = True
+            if 'elec_end' in line: elec_read = False
+            if 'data_start' in line: data_read = True
+            if 'data_end' in line: data_read = False
+        elif line.startswith('!'):
+            if data_read and 'ID' in line:
+                tokens = line[1:].rsplit()
+                found_tokens = {t: tokens.index(t) for t in known_tokens}
+                r_token = found_tokens['V/I,']
+                if tokens[r_token + 1] == 'Std.':
+                    found_tokens['err'] = r_token + 1
+        else:
+            if elec_read:
+                electrode = line.rsplit()
+                id = [int(electrode[0].split(',')[-1])]
+                xyz = map(float, electrode[1:4])
+                elec.append(id + xyz)
+            if data_read and len(line) > 180: # disregard erroneous data points:
+                datum = line.rsplit()
+                d = [None] * len(found_tokens)
+                for token in found_tokens:
+                    ix = found_tokens[token]
+                    if token == 'err':
+                        d[ix] = float(datum[ix])
+                    elif known_tokens[token] == int:
+                        d[ix] = int(datum[ix].split(',')[-1])
+                    else:
+                        d[ix] = known_tokens[token](datum[ix])
+                data.append(d)
+
+    file.close()
+
+    das_tokens = ['A', 'B', 'M', 'N', 'V/I,', 'err']
+    bert_tokens = ['a', 'b', 'm', 'n', 'r(Ohm)', 'err(Ohm)']
+    fmt = ['%4d', '%4d', '%4d', '%4d', '%5e', '%5e']
+
+    if verbose:
+        print '  Number of electrodes found:', len(elec)
+        print '  Number of data found:', len(data)
+        print '  Tokens found:', sorted(found_tokens.keys())
+        print '  Tokens used:', das_tokens
+
+    elec = np.asarray(elec)
+    elec.sort(0)
+    elec = elec[:,1:]
+
+    # Writing BERT output
+    file = open(output, 'w')
+    file.write(str(len(elec)) + '\n')
+    file.write('# %7s %9s %9s \n' % ('x', 'y', 'z'))
+    for pos in elec:
+        file.write('%9.3f %9.3f %9.3f \n' % tuple(pos))
+    file.write(str(len(data)) + '\n')
+    file.write('# %2s \t %3s \t %3s \t %3s \t %12s \t %12s \n' % tuple(bert_tokens))
+    for d in data:
+        for ix, t in enumerate(das_tokens):
+            file.write(fmt[ix] % d[found_tokens[t]] + ' ' * 4)
+        file.write('\n')
+
+    file.close()
+    if verbose: print '\nWritten data to %s.' % output
+
+def describe(data):
+    """ Print minimal statistic description of data """
+    print "min:", np.min(data)
+    print "mean:", np.mean(data)
+    print "max:", np.max(data)
 
 def intfile2mesh(file, mesh, method='cubic'):
     """
@@ -230,7 +316,7 @@ def plotdata(mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
 
         lineCollection.set_color('black')
         lineCollection.set_linewidth(1)
-        lineCollection.set_linestyle('--')
+        lineCollection.set_linestyle('-')
         axes.add_collection(lineCollection)
 
     # Draw electrodes
