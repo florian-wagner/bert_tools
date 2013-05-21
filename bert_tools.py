@@ -338,7 +338,7 @@ def plotdata(mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
     cbar.set_label('\n' + clab)
 
     plt.title(title + '\n')
-    return fig
+    #return fig
 
 def plotmesh(mesh, **kwargs):
     """ Plot mesh with cell attributes """
