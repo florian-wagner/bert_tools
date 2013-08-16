@@ -150,7 +150,7 @@ def read_ohm(filename):
     print "Reading in %s... \n" % filename
     file = open(filename)
 
-    elecs_count = int(file.readline())
+    elecs_count = int(file.readline().strip())
     elecs_str = file.readline()
     elecs_dim = len(elecs_str.rsplit()) - 1
 
@@ -162,7 +162,7 @@ def read_ohm(filename):
         line = file.readline()
         elecs_pos[i] = line.rsplit()
 
-    data_count = int(file.readline())
+    data_count = int(file.readline().strip())
     data_str = file.readline()
     data_dim = len(data_str.rsplit()) - 1
 
@@ -445,7 +445,7 @@ def write_configs(fname, elecs, configs):
 
     for i in configs:
         for j in i:
-            if j in np.linspace(1, elecs.shape[0], elecs.shape[0]):
+            if j in np.linspace(0, elecs.shape[0], elecs.shape[0]+1):
                 fid.write('%d ' % j)
             else:
                 fid.write('%f ' % j)
