@@ -25,11 +25,33 @@ def abmn(n):
     """
     combs = np.array(list(itertools.combinations(range(1,n+1),4)))
     perms = np.empty(((n*(n-3)*(n-2)*(n-1)/8),4),'int')
+    print "Comprehensive data set: %d configurations." % len(perms)
     for i in range(np.size(combs,0)):
         perms[0+i*3,:] = combs[i,:] # ABMN
-        perms[1+i*3,:] = (combs[i,0],combs[i,3],combs[i,1],combs[i,2]) #AMNB
+        perms[1+i*3,:] = (combs[i,0],combs[i,2],combs[i,3],combs[i,1]) #AMNB
         perms[2+i*3,:] = (combs[i,0],combs[i,2],combs[i,1],combs[i,3]) #AMBN
+
     return perms
+
+def lehmann(n):
+    """
+    Construct complete Lehmann-type data set for n electrodes.
+    """
+    s = n * (n-3)/2
+    a, m = 0, 1
+    combs = []
+    for ni in xrange(n):
+        for bi in xrange(n):
+            if ni != bi and ni >= 2 and ni < bi:
+                combs.append((a, bi, m, ni))
+
+    a, b, m = 1, 0, 2
+    for ni in xrange(n):
+        if ni >= 3:
+            combs.append((a, b, m, ni))
+    print "Number of data is %d (should be %d)" % (len(combs), s)
+
+    return np.asarray(combs, 'int')
 
 def area(a, b, c):
     """ Return area of triangle given the position vectors of corner points """
@@ -206,15 +228,15 @@ def logdrop(data, lim=1e-3, normalize=False):
     """ Scale data logarithmically, maintain polarity, remove absolute values
         smaller lim and normalize everything to to the maximum value.
     """
- 
+
     data = np.asarray(data)
     sign = np.sign(data)  # keep polarity
-    data = np.abs(data) 
+    data = np.abs(data)
     data /= data.max()
     data /= lim
     data[data < 1] = 1
     data = np.log10(data)
-    
+
     return data / data.max() * sign
 
 def pdense(x, y, sigma, M=1000):
@@ -261,7 +283,7 @@ def pole_bipole(n,c):
             confs.append((comb[1], c, comb[0], p))
     print "%s configurations generated." % len(confs)
     #nicht fertig!! return np.asarray(confs, dtype='int')
-       
+
 def plotdata(mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
              cmax=None, xlab='x (m)', ylab='depth (m)', clab='', title='',
              elecs=True, grid=True, bounds=False, orientation='vertical'):

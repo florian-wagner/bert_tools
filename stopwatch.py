@@ -21,3 +21,4 @@ def stop():
     m, s = divmod(elapsed, 60)
     h, m = divmod(m, 60)
     print "Elapsed run time: %02dh %02dmin %02dsec" % (h, m, s)
+    return elapsed
