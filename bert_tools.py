@@ -284,7 +284,7 @@ def pole_bipole(n,c):
     print "%s configurations generated." % len(confs)
     #nicht fertig!! return np.asarray(confs, dtype='int')
 
-def plotdata(mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
+def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
              cmax=None, xlab='x (m)', ylab='depth (m)', clab='', title='',
              elecs=True, grid=True, bounds=False, orientation='vertical'):
     """
@@ -317,8 +317,9 @@ def plotdata(mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
     patches.set_cmap(cmap)
 
     # Axes settings
-    fig = plt.figure()
-    axes = fig.add_subplot(111)
+    #fig = plt.figure()
+    #axes = fig.add_subplot(111)
+    axes = ax
     axes.set_aspect('equal')
     axes.add_collection(patches)
 
@@ -356,10 +357,10 @@ def plotdata(mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
         plt.plot(el_pos[:, 0], el_pos[:, 1], 'wo')
 
     # Colorbar settings
-    cbar = fig.colorbar(patches, orientation=orientation)
+    cbar = plt.colorbar(patches, orientation=orientation)
     cbar.set_label('\n' + clab)
 
-    plt.title(title + '\n')
+    axes.set_title(title + '\n')
     #return fig
 
 def plotmesh(mesh, **kwargs):
@@ -367,13 +368,13 @@ def plotmesh(mesh, **kwargs):
     data = np.asarray(mesh.cellAttributes())
     return plotdata(mesh, data, **kwargs)
 
-def plotsens(mesh, data, cmap='RdBu_r', cmin=-1, cmax=1,
+def plotsens(ax, mesh, data, cmap='RdBu_r', cmin=-1, cmax=1,
              clab='Normalized Sensitivity', abmn=False, cfg=False, **kwargs):
     """
      Plot sensitivities on triangular mesh
     """
 
-    fig = plotdata(mesh, data, cmap, cmin=cmin, cmax=cmax, clab=clab, **kwargs)
+    fig = plotdata(ax, mesh, data, cmap, cmin=cmin, cmax=cmax, clab=clab, **kwargs)
 
     # Plot ABMNs
     if abmn:
