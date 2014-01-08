@@ -552,3 +552,30 @@ def create2Dxhconfs(nel, ds=1, inhole=False):
         confs = np.vstack((confs, inconfs, inconfs + nel))
     print "%s configurations generated." % len(confs)
     return confs
+
+def create4PComplete(nel):
+    """ Create circulating dipole sheme (complete 4p basis) """
+    confs = []
+    ints = nel - 3
+
+    # dipole - dipole
+    for i in range(ints):
+        i += 1
+        for j in range(ints - (i-1)):
+            a = i
+            b = a + 1
+            m = b + 1 + j
+            n = m + 1
+            confs.append((a, b, m, n))
+
+    # complete with circulating sheme
+    for i in range(ints):
+        a = 1
+        b = nel
+        m = i + 2
+        n = m + 1
+        confs.append((a, b, m, n))
+
+    print "Created circulating dipole sheme with %d configurations for %d electrodes." % (len(confs), nel)
+
+    return np.asarray(confs)
