@@ -357,7 +357,7 @@ def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
         plt.plot(el_pos[:, 0], el_pos[:, 1], 'wo')
 
     # Colorbar settings
-    cbar = plt.colorbar(patches, orientation=orientation)
+    cbar = plt.colorbar(patches, ax=ax, orientation=orientation)
     cbar.set_label('\n' + clab)
 
     axes.set_title(title + '\n')
@@ -576,6 +576,36 @@ def create4PComplete(nel):
         n = m + 1
         confs.append((a, b, m, n))
 
-    print "Created circulating dipole sheme with %d configurations for %d electrodes." % (len(confs), nel)
+    #print "Created circulating dipole sheme with %d configurations for %d electrodes." % (len(confs), nel)
 
     return np.asarray(confs)
+
+def unique_rows(a):
+    """ Find unique rows in an array. """
+    a = np.ascontiguousarray(a)
+    unique_a = np.unique(a.view([('', a.dtype)]*a.shape[1]))
+    return unique_a.view(a.dtype).reshape((unique_a.shape[0], a.shape[1]))
+
+def create4PFullComplete(nel):
+    #FIXME: Highly inefficient!!!
+    """ Create full circulating dipole sheme for every combination of electrodes. """
+
+    def replace_confs(combs, confs):
+        confs_all = confs.tolist()
+        for comb in combs:
+            confs_i = confs.copy()
+            for ix, entry in enumerate(comb):
+                confs_i[confs == ix + 1] = entry
+            confs_all.extend(confs_i.tolist())
+        return confs_all
+
+    confs = []
+    for i in range(4, nel + 1):
+        compl = create4PComplete(i)
+        combs = list(itertools.combinations(range(1,nel + 1), i))
+        confs.extend(replace_confs(combs, compl))
+
+    confs = unique_rows(np.asarray(confs))
+
+    print "Created circulating dipole sheme with %d configurations for %d electrodes." % (len(confs), nel)
+    return confs
