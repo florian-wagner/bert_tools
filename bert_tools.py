@@ -286,7 +286,7 @@ def pole_bipole(n,c):
 
 def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
              cmax=None, xlab='x (m)', ylab='depth (m)', clab='', title='',
-             elecs=True, grid=True, bounds=False, orientation='vertical'):
+             elecs=True, grid=True, bounds=False, orientation='vertical', rasterized=False):
     """
      Plot finite element data on triangular mesh
     """
@@ -304,7 +304,7 @@ def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
             print "unknown shape to patch: " , cell.shape(), cell.shape().nodeCount()
 
     # Patch settings
-    patches = mpl.collections.PolyCollection(polys)
+    patches = mpl.collections.PolyCollection(polys, rasterized=rasterized)
     patches.set_antialiased(True)
     if grid:
         patches.set_linewidth(0.1)
@@ -339,7 +339,7 @@ def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
             lines.append(zip([bound.node(0).x(), bound.node(1).x()],
                              [bound.node(0).y(), bound.node(1).y()]))
 
-        lineCollection = mpl.collections.LineCollection(lines)
+        lineCollection = mpl.collections.LineCollection(lines, rasterized=rasterized)
 
         lineCollection.set_color('black')
         lineCollection.set_linewidth(1)
@@ -576,6 +576,36 @@ def create4PComplete(nel):
         n = m + 1
         confs.append((a, b, m, n))
 
-    print "Created circulating dipole sheme with %d configurations for %d electrodes." % (len(confs), nel)
+    #print "Created circulating dipole sheme with %d configurations for %d electrodes." % (len(confs), nel)
 
     return np.asarray(confs)
+
+def unique_rows(a):
+    """ Find unique rows in an array. """
+    a = np.ascontiguousarray(a)
+    unique_a = np.unique(a.view([('', a.dtype)]*a.shape[1]))
+    return unique_a.view(a.dtype).reshape((unique_a.shape[0], a.shape[1]))
+
+def create4PFullComplete(nel):
+    #FIXME: Highly inefficient!!!
+    """ Create full circulating dipole sheme for every combination of electrodes. """
+
+    def replace_confs(combs, confs):
+        confs_all = confs.tolist()
+        for comb in combs:
+            confs_i = confs.copy()
+            for ix, entry in enumerate(comb):
+                confs_i[confs == ix + 1] = entry
+            confs_all.extend(confs_i.tolist())
+        return confs_all
+
+    confs = []
+    for i in range(4, nel + 1):
+        compl = create4PComplete(i)
+        combs = list(itertools.combinations(range(1,nel + 1), i))
+        confs.extend(replace_confs(combs, compl))
+
+    confs = unique_rows(np.asarray(confs))
+
+    print "Created circulating dipole sheme with %d configurations for %d electrodes." % (len(confs), nel)
+    return confs
