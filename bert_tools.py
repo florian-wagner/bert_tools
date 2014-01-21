@@ -357,7 +357,7 @@ def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
         plt.plot(el_pos[:, 0], el_pos[:, 1], 'wo')
 
     # Colorbar settings
-    cbar = plt.colorbar(patches, orientation=orientation)
+    cbar = plt.colorbar(patches, ax=ax, orientation=orientation)
     cbar.set_label('\n' + clab)
 
     axes.set_title(title + '\n')
