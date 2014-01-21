@@ -286,7 +286,7 @@ def pole_bipole(n,c):
 
 def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
              cmax=None, xlab='x (m)', ylab='depth (m)', clab='', title='',
-             elecs=True, grid=True, bounds=False, orientation='vertical'):
+             elecs=True, grid=True, bounds=False, orientation='vertical', rasterized=False):
     """
      Plot finite element data on triangular mesh
     """
@@ -304,7 +304,7 @@ def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
             print "unknown shape to patch: " , cell.shape(), cell.shape().nodeCount()
 
     # Patch settings
-    patches = mpl.collections.PolyCollection(polys)
+    patches = mpl.collections.PolyCollection(polys, rasterized=rasterized)
     patches.set_antialiased(True)
     if grid:
         patches.set_linewidth(0.1)
@@ -339,7 +339,7 @@ def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
             lines.append(zip([bound.node(0).x(), bound.node(1).x()],
                              [bound.node(0).y(), bound.node(1).y()]))
 
-        lineCollection = mpl.collections.LineCollection(lines)
+        lineCollection = mpl.collections.LineCollection(lines, rasterized=rasterized)
 
         lineCollection.set_color('black')
         lineCollection.set_linewidth(1)
