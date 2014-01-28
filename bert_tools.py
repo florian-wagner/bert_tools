@@ -448,7 +448,7 @@ def write_configs(fname, elecs, configs):
     fid.write('%d \n' % elecs.shape[0])
 
     if elecs.shape[1] == 2:
-        fid.write('# x y \n')
+        fid.write('# x z \n')
     elif elecs.shape[1] == 3:
         fid.write('# x y z \n')
     else:
