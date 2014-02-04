@@ -23,15 +23,16 @@ def abmn(n):
        Construct all possible ABMN configurations for a given
        numer of sensors after Noel and Xu (1991)
     """
-    combs = np.array(list(itertools.combinations(range(1,n+1),4)))
-    perms = np.empty(((n*(n-3)*(n-2)*(n-1)/8),4),'int')
+    combs = np.array(list(itertools.combinations(range(1, n+1), 4)))
+    perms = np.empty(((n*(n-3)*(n-2)*(n-1)/8), 4), 'int')
     print "Comprehensive data set: %d configurations." % len(perms)
-    for i in range(np.size(combs,0)):
-        perms[0+i*3,:] = combs[i,:] # ABMN
-        perms[1+i*3,:] = (combs[i,0],combs[i,2],combs[i,3],combs[i,1]) #AMNB
-        perms[2+i*3,:] = (combs[i,0],combs[i,2],combs[i,1],combs[i,3]) #AMBN
+    for i in range(np.size(combs, 0)):
+        perms[0+i*3, :] = combs[i,:] # ABMN
+        perms[1+i*3, :] = (combs[i, 0], combs[i, 2], combs[i, 3], combs[i, 1]) #AMNB
+        perms[2+i*3, :] = (combs[i, 0], combs[i, 2], combs[i, 1], combs[i, 3]) #AMBN
 
     return perms
+
 
 def lehmann(n):
     """
@@ -53,16 +54,19 @@ def lehmann(n):
 
     return np.asarray(combs, 'int')
 
+
 def area(a, b, c):
     """ Return area of triangle given the position vectors of corner points """
     area = 0.5 * np.linalg.norm(np.cross(b-a, c-a))
     return area
 
+
 def das2ohm(input, output='data.ohm', verbose=True):
     """ Reads DAS-1 output and writes ohm-file for BERT """
 
     # Reading DAS-1 format
-    if verbose: print 'Reading in', input, '... \n'
+    if verbose:
+        print 'Reading in', input, '... \n'
     file = open(input)
 
     elec_read, data_read = False, False
@@ -72,10 +76,14 @@ def das2ohm(input, output='data.ohm', verbose=True):
 
     for i, line in enumerate(file):
         if line.startswith('#'):
-            if 'elec_start' in line: elec_read = True
-            if 'elec_end' in line: elec_read = False
-            if 'data_start' in line: data_read = True
-            if 'data_end' in line: data_read = False
+            if 'elec_start' in line:
+                elec_read = True
+            if 'elec_end' in line:
+                elec_read = False
+            if 'data_start' in line:
+                data_read = True
+            if 'data_end' in line:
+                data_read = False
         elif line.startswith('!'):
             if data_read and 'ID' in line:
                 tokens = line[1:].rsplit()
@@ -89,7 +97,8 @@ def das2ohm(input, output='data.ohm', verbose=True):
                 id = [int(electrode[0].split(',')[-1])]
                 xyz = map(float, electrode[1:4])
                 elec.append(id + xyz)
-            if data_read and len(line) > 180: # disregard erroneous data points:
+            # disregard erroneous data points:
+            if data_read and len(line) > 180:
                 datum = line.rsplit()
                 d = [None] * len(found_tokens)
                 for token in found_tokens:
@@ -104,7 +113,7 @@ def das2ohm(input, output='data.ohm', verbose=True):
 
     file.close()
 
-    #TODO: express error relative to resistance value
+    # TODO: express error relative to resistance value
 
     das_tokens = ['A', 'B', 'M', 'N', 'V/I,', 'err']
     bert_tokens = ['a', 'b', 'm', 'n', 'r', 'err/Ohm']
@@ -118,7 +127,7 @@ def das2ohm(input, output='data.ohm', verbose=True):
 
     elec = np.asarray(elec)
     elec.sort(0)
-    elec = elec[:,1:]
+    elec = elec[:, 1:]
 
     # Writing BERT output
     file = open(output, 'w')
@@ -136,13 +145,16 @@ def das2ohm(input, output='data.ohm', verbose=True):
         file.write('\n')
 
     file.close()
-    if verbose: print '\nWritten data to %s.' % output
+    if verbose:
+        print '\nWritten data to %s.' % output
+
 
 def describe(data):
     """ Print minimal statistic description of data """
     print "min:", np.min(data)
     print "mean:", np.mean(data)
     print "max:", np.max(data)
+
 
 def intfile2mesh(file, mesh, method='cubic'):
     """
@@ -152,6 +164,7 @@ def intfile2mesh(file, mesh, method='cubic'):
 
     return int2mesh(data, mesh, method=method)
 
+
 def int2mesh(data, mesh, method='cubic'):
     """
        Map point data to triangular mesh and return array with cell values.
@@ -159,11 +172,12 @@ def int2mesh(data, mesh, method='cubic'):
 
     # extract cell centers
 
-    cell_mids = np.zeros(( mesh.cellCount(), mesh.dim() ))
-    for i, cell in enumerate( mesh.cells() ):
-        cell_mids[ i ] = (cell.center()[ 0 ], cell.center()[ 1 ])
+    cell_mids = np.zeros((mesh.cellCount(), mesh.dim()))
+    for i, cell in enumerate(mesh.cells()):
+        cell_mids[i] = (cell.center()[0], cell.center()[1])
 
-    return griddata(data[:,:2], data[:,2], cell_mids, fill_value=0, method=method)
+    return griddata(data[:, :2], data[:, 2], cell_mids, fill_value=0, method=method)
+
 
 def read_ohm(filename):
     """
@@ -200,29 +214,35 @@ def read_ohm(filename):
 
     return elecs_pos, data
 
+
 def load_constraint_matrix(fname):
     """ Load constraint matrix in sparse format """
     global mesh
     i, j, data = np.loadtxt(fname, unpack=True, dtype=int)
-    C = coo_matrix((data, (i,j)), shape=(mesh.boundaryCount(), mesh.cellCount()), dtype=int)
+    C = coo_matrix((data, (i, j)),
+                   shape=(mesh.boundaryCount(), mesh.cellCount()), dtype=int)
     return C
+
 
 def loadsens(sensname):
     """
        Load sensitivity matrix from BERT binary file.
     """
     print "Loading %s... \n" % sensname
-    fid = open(sensname,'rb')
-    ndata = np.fromfile(fid, 'int32', 1); ndata = int(ndata[0])
-    nmodel = np.fromfile(fid, 'int32', 1); nmodel = int(nmodel[0])
-    S = np.empty((ndata,nmodel), 'float')
+    fid = open(sensname, 'rb')
+    ndata = np.fromfile(fid, 'int32', 1)
+    ndata = int(ndata[0])
+    nmodel = np.fromfile(fid, 'int32', 1)
+    nmodel = int(nmodel[0])
+    S = np.empty((ndata, nmodel), 'float')
 
     for i in range(ndata):
-        S[i,:] = np.fromfile(fid,'float',nmodel)
+        S[i, :] = np.fromfile(fid, 'float', nmodel)
     print "  Number of ABMNs: %s" % ndata
     print "  Number of cells: %s \n" % nmodel
     print "%s loaded. (Size: %.2f GB)\n" % (sensname, 9.31323e-10 * S.nbytes)
     return S
+
 
 def logdrop(data, lim=1e-3, normalize=False):
     """ Scale data logarithmically, maintain polarity, remove absolute values
@@ -239,6 +259,7 @@ def logdrop(data, lim=1e-3, normalize=False):
 
     return data / data.max() * sign
 
+
 def pdense(x, y, sigma, M=1000):
     """ Plot probability density of y with known stddev sigma
     """
@@ -254,9 +275,10 @@ def pdense(x, y, sigma, M=1000):
                origin='lower', extent=(min(x), max(x), ymin, ymax))
     plt.title('Density plot')
 
+
 def pole_pole(n, c=0, p=0, reciprocal=False, skip=None):
     """Return (reciprocal) complete pole-pole data set for n electrodes"""
-    combs = list(itertools.combinations(range(1,n+1),2))
+    combs = list(itertools.combinations(range(1, n+1), 2))
     confs = []
     for comb in combs:
         confs.append((comb[0], c, comb[1], p))
@@ -267,41 +289,47 @@ def pole_pole(n, c=0, p=0, reciprocal=False, skip=None):
     confs = np.asarray(confs, dtype='int')
 
     if skip:
-        idx = np.abs(confs[:,0] - confs[:,2]) > skip
+        idx = np.abs(confs[:, 0] - confs[:, 2]) > skip
         confs = confs[idx]
         print "%s configurations after skipping." % len(confs)
 
     return confs
 
-def pole_bipole(n,c):
+
+def pole_bipole(n, c):
     """Return complete pole-bipole data set for n electrodes"""
-    combs = list(itertools.combinations(range(1,n+1),2))
+    combs = list(itertools.combinations(range(1, n+1), 2))
     confs = []
     for comb in combs:
         confs.append((comb[0], c, comb[1], p))
         if reciprocal:
             confs.append((comb[1], c, comb[0], p))
     print "%s configurations generated." % len(confs)
-    #nicht fertig!! return np.asarray(confs, dtype='int')
+    # nicht fertig!! return np.asarray(confs, dtype='int')
 
-def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
-             cmax=None, xlab='x (m)', ylab='depth (m)', clab='', title='',
-             elecs=True, grid=True, bounds=False, orientation='vertical', rasterized=False):
+
+def plotdata(
+    ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
+    cmax=None, xlab='x (m)', ylab='depth (m)', clab='', title='',
+        elecs=True, grid=True, bounds=False, orientation='vertical', rasterized=False, cbar=True):
     """
      Plot finite element data on triangular mesh
     """
     polys = []
     for cell in mesh.cells():
         if (cell.shape().nodeCount() == 3):
-            polys.append(zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x()],
-                               [cell.node(0).y(), cell.node(1).y(), cell.node(2).y()]))
+            polys.append(
+                zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x()],
+                    [cell.node(0).y(), cell.node(1).y(), cell.node(2).y()]))
         elif (cell.shape().nodeCount() == 4):
-            polys.append(zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x(),
-                                    cell.node(3).x()],
-                               [cell.node(0).y(), cell.node(1).y(), cell.node(2).y(),
-                                    cell.node(3).y()]))
+            polys.append(
+                zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x(),
+                     cell.node(3).x()],
+                    [cell.node(
+                        0).y(), cell.node(1).y(), cell.node(2).y(),
+                     cell.node(3).y()]))
         else:
-            print "unknown shape to patch: " , cell.shape(), cell.shape().nodeCount()
+            print "unknown shape to patch: ", cell.shape(), cell.shape().nodeCount()
 
     # Patch settings
     patches = mpl.collections.PolyCollection(polys, rasterized=rasterized)
@@ -311,6 +339,11 @@ def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
         patches.set_edgecolor('0.5')
     else:
         patches.set_edgecolor('face')
+
+    if cmin is None:
+        cmin = np.min(data)
+    if cmax is None:
+        cmax = np.max(data)
 
     patches.set_array(data)
     patches.set_clim(cmin, cmax)
@@ -323,8 +356,10 @@ def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
     axes.set_aspect('equal')
     axes.add_collection(patches)
 
-    if xlim is None: xlim=(mesh.xmin(), mesh.xmax())
-    if ylim is None: ylim=(mesh.ymin(), mesh.ymax())
+    if xlim is None:
+        xlim = (mesh.xmin(), mesh.xmax())
+    if ylim is None:
+        ylim = (mesh.ymin(), mesh.ymax())
 
     axes.set_xlim(xlim[0], xlim[1])
     axes.set_ylim(ylim[0], ylim[1])
@@ -339,7 +374,8 @@ def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
             lines.append(zip([bound.node(0).x(), bound.node(1).x()],
                              [bound.node(0).y(), bound.node(1).y()]))
 
-        lineCollection = mpl.collections.LineCollection(lines, rasterized=rasterized)
+        lineCollection = mpl.collections.LineCollection(
+            lines, rasterized=rasterized)
 
         lineCollection.set_color('black')
         lineCollection.set_linewidth(1)
@@ -349,7 +385,7 @@ def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
     # Draw electrodes
     if elecs:
         el_cfg = mesh.findNodesIdxByMarker(-99)
-        #print '%s electrodes found.' % len(el_cfg)
+        # print '%s electrodes found.' % len(el_cfg)
         el_pos = np.zeros([len(el_cfg), 2])
         for i, idx in enumerate(el_cfg):
             el_pos[i] = np.array([mesh.node(idx).x(), mesh.node(idx).y()])
@@ -357,16 +393,20 @@ def plotdata(ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
         plt.plot(el_pos[:, 0], el_pos[:, 1], 'wo')
 
     # Colorbar settings
-    cbar = plt.colorbar(patches, ax=ax, orientation=orientation)
-    cbar.set_label('\n' + clab)
+    if cbar:
+        cbar = plt.colorbar(patches, ax=ax, orientation=orientation)
+        cbar.set_label('\n' + clab)
 
-    axes.set_title(title + '\n')
-    #return fig
+        axes.set_title(title + '\n')
+        return cbar
+    return patches
+
 
 def plotmesh(mesh, **kwargs):
     """ Plot mesh with cell attributes """
     data = np.asarray(mesh.cellAttributes())
     return plotdata(mesh, data, **kwargs)
+
 
 def plotsens(ax, mesh, data, cmap='RdBu_r', cmin=-1, cmax=1,
              clab='Normalized Sensitivity', abmn=False, cfg=False, **kwargs):
@@ -374,7 +414,8 @@ def plotsens(ax, mesh, data, cmap='RdBu_r', cmin=-1, cmax=1,
      Plot sensitivities on triangular mesh
     """
 
-    fig = plotdata(ax, mesh, data, cmap, cmin=cmin, cmax=cmax, clab=clab, **kwargs)
+    fig = plotdata(ax, mesh, data, cmap, cmin=cmin,
+                   cmax=cmax, clab=clab, **kwargs)
 
     # Plot ABMNs
     if abmn:
@@ -384,30 +425,38 @@ def plotsens(ax, mesh, data, cmap='RdBu_r', cmin=-1, cmax=1,
         z = np.size(elecs, 1) - 1
 
         for k, e in enumerate(['A', 'B', 'M', 'N']):
-            if elecs[:, 0][configs[cfg, k]-1] < -25: offset = -18; arrowpos = (1.1, 0.5)
-            else: offset = 10; arrowpos = (-0.1, 0.5)
-            plt.annotate(e, xy=(elecs[:, 0][configs[cfg, k]-1], elecs[:, z][configs[cfg, k]-1]), size=12,
-                         va="center", bbox=dict(boxstyle="round", fc=(0.7, 0.7, 0.7), ec="black", alpha=0.75),
-                         xytext=(offset, 0), textcoords='offset points',
-                         arrowprops=dict(arrowstyle="wedge, tail_width=0.7",
-                                        fc=(0.7, 0.7, 0.7), ec="black",
-                                        patchA=None, relpos=arrowpos, alpha=0.75,
-                                        ))
+            if elecs[:, 0][configs[cfg, k]-1] < -25:
+                offset = -18
+                arrowpos = (1.1, 0.5)
+            else:
+                offset = 10
+                arrowpos = (-0.1, 0.5)
+            plt.annotate(
+                e, xy=(elecs[:, 0][configs[cfg, k]-1],
+                       elecs[:, z][configs[cfg, k]-1]), size=12,
+                va="center", bbox=dict(boxstyle="round", fc=(0.7, 0.7, 0.7), ec="black", alpha=0.75),
+                xytext=(offset, 0), textcoords='offset points',
+                arrowprops=dict(arrowstyle="wedge, tail_width=0.7",
+                                fc=(0.7, 0.7, 0.7), ec="black",
+                                patchA=None, relpos=arrowpos, alpha=0.75,
+                                ))
     return fig
 
-def plothist(index,ohmfile,n=1000):
+
+def plothist(index, ohmfile, n=1000):
     """
     Plot histogramm of electrode usage (C or P) for best rated configurations
     """
     elecs, configs = read_ohm(ohmfile)
-    configs = configs[:,:4].astype('int')
+    configs = configs[:, :4].astype('int')
 
     num_elecs = len(elecs)
-    el_no = np.arange(1,num_elecs + 1)
+    el_no = np.arange(1, num_elecs + 1)
 
     hist_data = []
     for i in range(4):
-        hist_data.append(np.bincount(configs[ index[:n], i],minlength=num_elecs + 1)[1:])
+        hist_data.append(
+            np.bincount(configs[index[:n], i], minlength=num_elecs + 1)[1:])
 
     # A+B & M+N
     C = hist_data[0] + hist_data[1]
@@ -417,8 +466,8 @@ def plothist(index,ohmfile,n=1000):
 
     ax1 = plt.subplot(211)
     ax1.grid()
-    ax1.axvspan(4.5,7.5, color='#669966', alpha=0.7)
-    ax1.axvspan(23.2,26.5, color='#669966', alpha=0.7)
+    ax1.axvspan(4.5, 7.5, color='#669966', alpha=0.7)
+    ax1.axvspan(23.2, 26.5, color='#669966', alpha=0.7)
     ax1.axhline(C.mean(), color='#990033', linestyle='--', linewidth=1.5)
     ax1.bar(el_no - 0.4, C, edgecolor='k', color='#336699')
     ax1.set_ylabel('Current injection')
@@ -427,8 +476,8 @@ def plothist(index,ohmfile,n=1000):
     #
     ax2 = plt.subplot(212, sharex=ax1, sharey=ax1)
     ax2.grid()
-    ax2.axvspan(4.5,7.5, color='#669966', alpha=0.7)
-    ax2.axvspan(23.2,26.5, color='#669966', alpha=0.7)
+    ax2.axvspan(4.5, 7.5, color='#669966', alpha=0.7)
+    ax2.axvspan(23.2, 26.5, color='#669966', alpha=0.7)
     ax2.axhline(P.mean(), color='#990033', linestyle='--', linewidth=1.5)
     ax2.bar(el_no-0.4, P, color='#336699', edgecolor='k')
     ax2.set_xlim(0.5, 30.5)
@@ -438,6 +487,7 @@ def plothist(index,ohmfile,n=1000):
     ax2.set_axisbelow(True)
 
     return fig
+
 
 def write_configs(fname, elecs, configs):
     """
@@ -476,6 +526,7 @@ def write_configs(fname, elecs, configs):
 
     fid.close()
 
+
 def create2Dconfs(nel, ds=1):
     def create2Dint(nel, ds):
         c = 1  # counter
@@ -512,7 +563,8 @@ def create2Dconfs(nel, ds=1):
     print "%s configurations generated." % len(confs)
     return confs
 
-def create2Dxhconfs(nel, ds=1, inhole=False):
+
+def create2Dxhconfs(nel, ds=1, inhole=False, bipole=False):
     def createxhint(nel, ds):
 
         bh1 = np.linspace(1, nel, nel, 'int')
@@ -529,6 +581,7 @@ def create2Dxhconfs(nel, ds=1, inhole=False):
                 m = bh2[j]
                 n = m + ds
                 confs.append((a, b, m, n))
+                confs.append((a, m, b, n))
 
         return np.asarray(confs)
 
@@ -553,6 +606,7 @@ def create2Dxhconfs(nel, ds=1, inhole=False):
     print "%s configurations generated." % len(confs)
     return confs
 
+
 def create4PComplete(nel):
     """ Create circulating dipole sheme (complete 4p basis) """
     confs = []
@@ -576,9 +630,11 @@ def create4PComplete(nel):
         n = m + 1
         confs.append((a, b, m, n))
 
-    #print "Created circulating dipole sheme with %d configurations for %d electrodes." % (len(confs), nel)
+    # print "Created circulating dipole sheme with %d configurations for %d
+    # electrodes." % (len(confs), nel)
 
     return np.asarray(confs)
+
 
 def unique_rows(a):
     """ Find unique rows in an array. """
@@ -586,8 +642,9 @@ def unique_rows(a):
     unique_a = np.unique(a.view([('', a.dtype)]*a.shape[1]))
     return unique_a.view(a.dtype).reshape((unique_a.shape[0], a.shape[1]))
 
+
 def create4PFullComplete(nel):
-    #FIXME: Highly inefficient!!!
+    # FIXME: Highly inefficient!!!
     """ Create full circulating dipole sheme for every combination of electrodes. """
 
     def replace_confs(combs, confs):
@@ -602,7 +659,7 @@ def create4PFullComplete(nel):
     confs = []
     for i in range(4, nel + 1):
         compl = create4PComplete(i)
-        combs = list(itertools.combinations(range(1,nel + 1), i))
+        combs = list(itertools.combinations(range(1, nel + 1), i))
         confs.extend(replace_confs(combs, compl))
 
     confs = unique_rows(np.asarray(confs))
