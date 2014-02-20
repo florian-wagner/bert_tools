@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""    
+"""
 File: data_class.py
 Author: Florian Wagner (fwagner@gfz-potsdam.de)
 Description: Class for BERT data files
@@ -10,12 +10,13 @@ import pandas as pd
 
 class Data:
 
-    def __init__(self, filename):
+    def __init__(self, filename, verbose=True):
         """
         Construct Data class instance from BERT's unified data file (*.ohm)
         """
 
-        print "Reading in %s... \n" % filename
+        if verbose:
+            print "Reading in %s... \n" % filename
         file = open(filename)
 
         self.eleccount = int(file.readline())
@@ -32,26 +33,27 @@ class Data:
         data_str = file.readline()
         data_dim = len(data_str.rsplit()) - 1
         data_ix = data_str.rsplit()[1:]
-        
+
         self._string_ = """
         Number of electrodes: %s
         Dimension: %s
-        Coordinates: %s 
+        Coordinates: %s
         Number of data points: %s
         Data header: %s
         """ % (self.eleccount, elecs_dim, elecs_str, self.datacount, data_str)
-        
+
         self.data = np.zeros((self.datacount, data_dim), 'float')
         for i in range(self.datacount):
             line = file.readline()
             self.data[i] = line.rsplit()
-        
+
         file.close()
-        
+
         self.data = pd.DataFrame(self.data, columns=data_ix)
         self.elecs = pd.DataFrame(self.elecs, columns=elecs_ix)
-        
-        print self._string_
-    
+
+        if verbose:
+            print self._string_
+
     def __str__(self):
         return self._string_
