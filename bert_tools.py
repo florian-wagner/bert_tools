@@ -16,12 +16,13 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
 from scipy.sparse import coo_matrix
-
+from matplotlib.offsetbox import AnchoredText
+from matplotlib.patheffects import withStroke
 
 def abmn(n):
     """
        Construct all possible ABMN configurations for a given
-       numer of sensors after Noel and Xu (1991)
+       number of sensors after Noel and Xu (1991)
     """
     combs = np.array(list(itertools.combinations(range(1, n+1), 4)))
     perms = np.empty(((n*(n-3)*(n-2)*(n-1)/8), 4), 'int')
@@ -32,6 +33,17 @@ def abmn(n):
         perms[2+i*3, :] = (combs[i, 0], combs[i, 2], combs[i, 1], combs[i, 3]) #AMBN
 
     return perms
+
+
+def add_inner_title(ax, title, loc, size=None, **kwargs):
+    if size is None:
+        size = dict(size=plt.rcParams['legend.fontsize'])
+    at = AnchoredText(title, loc=loc, prop=size,
+                      pad=0., borderpad=0.5,
+                      frameon=False, **kwargs)
+    ax.add_artist(at)
+    at.txt._text.set_path_effects([withStroke(foreground="w", linewidth=3)])
+    return at
 
 
 def lehmann(n):
@@ -310,7 +322,7 @@ def pole_bipole(n, c):
 
 def plotdata(
     ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
-    cmax=None, xlab='x (m)', ylab='depth (m)', clab='', title='',
+    cmax=None, xlab='$x$ (m)', ylab='Depth (m)', clab='', title='',
         elecs=True, grid=True, bounds=False, orientation='vertical', rasterized=False, cbar=True):
     """
      Plot finite element data on triangular mesh
@@ -335,7 +347,7 @@ def plotdata(
     patches = mpl.collections.PolyCollection(polys, rasterized=rasterized)
     patches.set_antialiased(True)
     if grid:
-        patches.set_linewidth(0.1)
+        patches.set_linewidth(0.05)
         patches.set_edgecolor('0.5')
     else:
         patches.set_edgecolor('face')
@@ -395,9 +407,9 @@ def plotdata(
     # Colorbar settings
     if cbar:
         cbar = plt.colorbar(patches, ax=ax, orientation=orientation)
-        cbar.set_label('\n' + clab)
+        cbar.set_label(clab)
 
-        axes.set_title(title + '\n')
+        axes.set_title(title)
         return cbar
     return patches
 
