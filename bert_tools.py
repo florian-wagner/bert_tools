@@ -18,6 +18,32 @@ from scipy.interpolate import griddata
 from scipy.sparse import coo_matrix
 from matplotlib.offsetbox import AnchoredText
 from matplotlib.patheffects import withStroke
+import math
+from pbar import ProgressBar
+
+def pubsize(width=4.33, dim='w', scale=1, fonsize=8):
+    golden_mean = (1.0 + math.sqrt(5.0)) / 2.0
+    width *= scale
+    if dim == 'w':
+        height = width / golden_mean
+    else:
+        height = width * golden_mean
+
+    fontsize = 8
+
+    params = { 'backend': 'ps',
+            'font.size'         : fontsize * scale,
+            'axes.labelsize'    : fontsize * scale,
+            'axes.titlesize'    : fontsize * scale,
+            'text.fontsize'     : fontsize * scale,
+            'legend.fontsize'   : fontsize * scale,
+            'xtick.labelsize'   : fontsize * scale,
+            'ytick.labelsize'   : fontsize * scale,
+    }
+
+    plt.rcParams.update(params)
+
+    return width, height
 
 def abmn(n):
     """
@@ -348,7 +374,8 @@ def plotdata(
     patches.set_antialiased(True)
     if grid:
         patches.set_linewidth(0.05)
-        patches.set_edgecolor('0.5')
+        #patches.set_edgecolor('0.5')
+        patches.set_edgecolor('0')
     else:
         patches.set_edgecolor('face')
 

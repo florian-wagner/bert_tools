@@ -7,7 +7,7 @@ class ProgressBar:
     notebook.
     """
     def __init__(self, its):
-        self.its = its
+        self.its = its - 1
         self.bar = '[]'
         self.sign = ':'
         self.width = 80
