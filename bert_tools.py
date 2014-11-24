@@ -19,9 +19,113 @@ from scipy.sparse import coo_matrix
 from matplotlib.offsetbox import AnchoredText
 from matplotlib.patheffects import withStroke
 import math
-from pbar import ProgressBar
+from .pbar import ProgressBar
 
-def pubsize(width=4.33, dim='w', scale=1, fonsize=8):
+def publify(fig_width=None, fig_height=None, columns=1, dim='horizontal', fontsize=8, context='paper', grid='white'):
+    """
+    Set up matplotlib parameters for paper quality.
+    Call this before plotting a figure.
+
+    Parameters
+    ----------
+    fig_width : float, optional, inches
+    fig_height : float,  optional, inches
+    columns : {1, 1.5, 2}
+    context: paper, notebook, talk, poster
+    """
+
+    scale = dict(paper=1, notebook=1.2, talk=1.5, poster=1.8)[context]
+
+    # Define colors here
+    dark_gray = ".15"
+    light_gray = ".8"
+
+    assert(columns in [1,1.5,2])
+
+    if fig_width is None:
+        # width in inches
+        if columns == 1:
+            fig_width = 3.55
+        elif columns == 1.5:
+            fig_width = 5.5
+        elif columns == 2:
+            fig_width = 7.5
+
+    if fig_height is None:
+        golden_mean = (1.0 + np.sqrt(5.0)) / 2.0
+        if dim == 'horizontal':
+            fig_height = fig_width / golden_mean
+        else:
+            fig_height = fig_width * golden_mean
+
+    palette=["#4C72B0", "#55A868", "#C44E52",
+             "#8172B2", "#CCB974", "#64B5CD"]
+
+    almost_black = '#262626'
+
+    params = {
+    # Font
+    'font.size': fontsize * scale,
+    'axes.labelsize': fontsize * scale,
+    'axes.titlesize': fontsize * scale,
+    'font.size': fontsize * scale,
+    'legend.fontsize': fontsize * scale,
+    'xtick.labelsize': fontsize * scale,
+    'ytick.labelsize': fontsize * scale,
+    'font.family': 'sans-serif',
+    'font.sans-serif': 'Arial',
+    'text.color': almost_black,
+    # Ticks
+    'xtick.major.pad': 6 * scale,
+    'xtick.minor.pad': 6 * scale,
+    'ytick.major.pad': 6 * scale,
+    'ytick.minor.pad': 6 * scale,
+    "xtick.major.width": 1 * scale,
+    "ytick.major.width": 1 * scale,
+    "xtick.minor.width": .5 * scale,
+    "ytick.minor.width": .5 * scale,
+    'xtick.major.size': 3 * scale,     # major tick size in points
+    'xtick.minor.size': 3 * scale,     # minor tick size in points
+    'ytick.major.size': 3 * scale,     # major tick size in points
+    'ytick.minor.size': 3 * scale,     # minor tick size in points
+    # Lines & Marker
+    'lines.markersize': 6 * scale,
+    'lines.linewidth': 0.6 * scale,
+    'axes.labelcolor': '.15',
+    'axes.linewidth': 1 * scale,
+    "grid.linewidth": 0.75 * scale,
+    "lines.linewidth": 1.25 * scale ,
+    "patch.linewidth": .3 * scale,
+    # Axes
+    'savefig.pad_inches'  : 0.05,
+    'axes.axisbelow': False,
+    'axes.edgecolor': almost_black,
+    'axes.facecolor': 'white',
+    'axes.grid': False,
+    'axes.color_cycle': ['#348ABD', '#8EBA42', '#E24A33',  '#FBC15E', '#FFB5B8', '#988ED5', '#777777'],
+    'grid.linestyle': '-',
+    'image.cmap': 'Spectral_r',
+    'legend.frameon': False,
+    'legend.numpoints': 1,
+    'legend.scatterpoints': 1,
+    'lines.solid_capstyle': 'round',
+    }
+
+    if grid.startswith("dark"):
+        params.update({
+            "axes.facecolor": '.95',
+            "grid.color": "white",
+            })
+
+    else:
+        params.update({
+            "axes.facecolor": "white",
+            "grid.color": light_gray,
+            })
+
+    mpl.rcParams.update(params)
+
+def pubsize(width=3.55, dim='w', scale=1, fontsize=7):
     golden_mean = (1.0 + math.sqrt(5.0)) / 2.0
     width *= scale
     if dim == 'w':
@@ -29,13 +133,10 @@ def pubsize(width=4.33, dim='w', scale=1, fonsize=8):
     else:
         height = width * golden_mean
 
-    fontsize = 8
-
-    params = { 'backend': 'ps',
+    params = {# 'backend': 'ps',
             'font.size'         : fontsize * scale,
             'axes.labelsize'    : fontsize * scale,
             'axes.titlesize'    : fontsize * scale,
-            'text.fontsize'     : fontsize * scale,
             'legend.fontsize'   : fontsize * scale,
             'xtick.labelsize'   : fontsize * scale,
             'ytick.labelsize'   : fontsize * scale,
@@ -50,9 +151,9 @@ def abmn(n):
        Construct all possible ABMN configurations for a given
        number of sensors after Noel and Xu (1991)
     """
-    combs = np.array(list(itertools.combinations(range(1, n+1), 4)))
+    combs = np.array(list(itertools.combinations(list(range(1, n+1)), 4)))
     perms = np.empty(((n*(n-3)*(n-2)*(n-1)/8), 4), 'int')
-    print "Comprehensive data set: %d configurations." % len(perms)
+    print(("Comprehensive data set: %d configurations." % len(perms)))
     for i in range(np.size(combs, 0)):
         perms[0+i*3, :] = combs[i,:] # ABMN
         perms[1+i*3, :] = (combs[i, 0], combs[i, 2], combs[i, 3], combs[i, 1]) #AMNB
@@ -79,16 +180,16 @@ def lehmann(n):
     s = n * (n-3)/2
     a, m = 0, 1
     combs = []
-    for ni in xrange(n):
-        for bi in xrange(n):
+    for ni in range(n):
+        for bi in range(n):
             if ni != bi and ni >= 2 and ni < bi:
                 combs.append((a, bi, m, ni))
 
     a, b, m = 1, 0, 2
-    for ni in xrange(n):
+    for ni in range(n):
         if ni >= 3:
             combs.append((a, b, m, ni))
-    print "Number of data is %d (should be %d)" % (len(combs), s)
+    print(("Number of data is %d (should be %d)" % (len(combs), s)))
 
     return np.asarray(combs, 'int')
 
@@ -104,7 +205,7 @@ def das2ohm(input, output='data.ohm', verbose=True):
 
     # Reading DAS-1 format
     if verbose:
-        print 'Reading in', input, '... \n'
+        print(('Reading in', input, '... \n'))
     file = open(input)
 
     elec_read, data_read = False, False
@@ -133,7 +234,7 @@ def das2ohm(input, output='data.ohm', verbose=True):
             if elec_read:
                 electrode = line.rsplit()
                 id = [int(electrode[0].split(',')[-1])]
-                xyz = map(float, electrode[1:4])
+                xyz = list(map(float, electrode[1:4]))
                 elec.append(id + xyz)
             # disregard erroneous data points:
             if data_read and len(line) > 180:
@@ -158,10 +259,10 @@ def das2ohm(input, output='data.ohm', verbose=True):
     fmt = ['%d', '%d', '%d', '%d', '%e', '%e']
 
     if verbose:
-        print '  Number of electrodes found:', len(elec)
-        print '  Number of data found:', len(data)
-        print '  Tokens found:', sorted(found_tokens.keys())
-        print '  Tokens used:', das_tokens
+        print(('  Number of electrodes found:', len(elec)))
+        print(('  Number of data found:', len(data)))
+        print(('  Tokens found:', sorted(found_tokens.keys())))
+        print(('  Tokens used:', das_tokens))
 
     elec = np.asarray(elec)
     elec.sort(0)
@@ -184,14 +285,14 @@ def das2ohm(input, output='data.ohm', verbose=True):
 
     file.close()
     if verbose:
-        print '\nWritten data to %s.' % output
+        print(('\nWritten data to %s.' % output))
 
 
 def describe(data):
     """ Print minimal statistic description of data """
-    print "min:", np.min(data)
-    print "mean:", np.mean(data)
-    print "max:", np.max(data)
+    print(("min:", np.min(data)))
+    print(("mean:", np.mean(data)))
+    print(("max:", np.max(data)))
 
 
 def intfile2mesh(file, mesh, method='cubic'):
@@ -221,15 +322,15 @@ def read_ohm(filename):
     """
        Read BERT data file (*.ohm) and return electrode positions and data array
     """
-    print "Reading in %s... \n" % filename
+    print(("Reading in %s... \n" % filename))
     file = open(filename)
 
     elecs_count = int(file.readline().strip())
     elecs_str = file.readline()
     elecs_dim = len(elecs_str.rsplit()) - 1
 
-    print "  Number of electrodes: %s" % elecs_count
-    print "  Dimension: %s \n" % elecs_dim
+    print(("  Number of electrodes: %s" % elecs_count))
+    print(("  Dimension: %s \n" % elecs_dim))
 
     elecs_pos = np.zeros((elecs_count, elecs_dim), 'float')
     for i in range(elecs_count):
@@ -240,8 +341,8 @@ def read_ohm(filename):
     data_str = file.readline()
     data_dim = len(data_str.rsplit()) - 1
 
-    print "  Number of data points: %s" % data_count
-    print "  Data header: %s" % data_str
+    print(("  Number of data points: %s" % data_count))
+    print(("  Data header: %s" % data_str))
 
     data = np.zeros((data_count, data_dim), 'float')
     for i in range(data_count):
@@ -266,7 +367,7 @@ def loadsens(sensname):
     """
        Load sensitivity matrix from BERT binary file.
     """
-    print "Loading %s... \n" % sensname
+    print(("Loading %s... \n" % sensname))
     fid = open(sensname, 'rb')
     ndata = np.fromfile(fid, 'int32', 1)
     ndata = int(ndata[0])
@@ -276,9 +377,9 @@ def loadsens(sensname):
 
     for i in range(ndata):
         S[i, :] = np.fromfile(fid, 'float', nmodel)
-    print "  Number of ABMNs: %s" % ndata
-    print "  Number of cells: %s \n" % nmodel
-    print "%s loaded. (Size: %.2f GB)\n" % (sensname, 9.31323e-10 * S.nbytes)
+    print(("  Number of ABMNs: %s" % ndata))
+    print(("  Number of cells: %s \n" % nmodel))
+    print(("%s loaded. (Size: %.2f GB)\n" % (sensname, 9.31323e-10 * S.nbytes)))
     return S
 
 
@@ -316,33 +417,33 @@ def pdense(x, y, sigma, M=1000):
 
 def pole_pole(n, c=0, p=0, reciprocal=False, skip=None):
     """Return (reciprocal) complete pole-pole data set for n electrodes"""
-    combs = list(itertools.combinations(range(1, n+1), 2))
+    combs = list(itertools.combinations(list(range(1, n+1)), 2))
     confs = []
     for comb in combs:
         confs.append((comb[0], c, comb[1], p))
         if reciprocal:
             confs.append((comb[1], c, comb[0], p))
-    print "%s configurations generated." % len(confs)
+    print(("%s configurations generated." % len(confs)))
 
     confs = np.asarray(confs, dtype='int')
 
     if skip:
         idx = np.abs(confs[:, 0] - confs[:, 2]) > skip
         confs = confs[idx]
-        print "%s configurations after skipping." % len(confs)
+        print(("%s configurations after skipping." % len(confs)))
 
     return confs
 
 
 def pole_bipole(n, c):
     """Return complete pole-bipole data set for n electrodes"""
-    combs = list(itertools.combinations(range(1, n+1), 2))
+    combs = list(itertools.combinations(list(range(1, n+1)), 2))
     confs = []
     for comb in combs:
         confs.append((comb[0], c, comb[1], p))
         if reciprocal:
             confs.append((comb[1], c, comb[0], p))
-    print "%s configurations generated." % len(confs)
+    print(("%s configurations generated." % len(confs)))
     # nicht fertig!! return np.asarray(confs, dtype='int')
 
 
@@ -357,17 +458,17 @@ def plotdata(
     for cell in mesh.cells():
         if (cell.shape().nodeCount() == 3):
             polys.append(
-                zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x()],
-                    [cell.node(0).y(), cell.node(1).y(), cell.node(2).y()]))
+                list(zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x()],
+                    [cell.node(0).y(), cell.node(1).y(), cell.node(2).y()])))
         elif (cell.shape().nodeCount() == 4):
             polys.append(
-                zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x(),
+                list(zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x(),
                      cell.node(3).x()],
                     [cell.node(
                         0).y(), cell.node(1).y(), cell.node(2).y(),
-                     cell.node(3).y()]))
+                     cell.node(3).y()])))
         else:
-            print "unknown shape to patch: ", cell.shape(), cell.shape().nodeCount()
+            print(("unknown shape to patch: ", cell.shape(), cell.shape().nodeCount()))
 
     # Patch settings
     patches = mpl.collections.PolyCollection(polys, rasterized=rasterized)
@@ -409,9 +510,9 @@ def plotdata(
     # Draw mesh boundaries
     if bounds:
         lines = []
-        for bound in filter(lambda b: b.marker() > 1, mesh.boundaries()):
-            lines.append(zip([bound.node(0).x(), bound.node(1).x()],
-                             [bound.node(0).y(), bound.node(1).y()]))
+        for bound in [b for b in mesh.boundaries() if b.marker() > 1]:
+            lines.append(list(zip([bound.node(0).x(), bound.node(1).x()],
+                             [bound.node(0).y(), bound.node(1).y()])))
 
         lineCollection = mpl.collections.LineCollection(
             lines, rasterized=rasterized)
@@ -532,7 +633,7 @@ def write_configs(fname, elecs, configs):
     """
        Write abmn configurations to BERT data file (*.ohm)
     """
-    print "Writing %s... \n" % fname
+    print(("Writing %s... \n" % fname))
     fid = open(fname, 'w')
     fid.write('%d \n' % elecs.shape[0])
 
@@ -541,7 +642,7 @@ def write_configs(fname, elecs, configs):
     elif elecs.shape[1] == 3:
         fid.write('# x y z \n')
     else:
-        print "WARNING: Wrong electrode dimension."
+        print("WARNING: Wrong electrode dimension.")
 
     for i in elecs:
         for j in i:
@@ -551,7 +652,7 @@ def write_configs(fname, elecs, configs):
     fid.write('%d \n' % configs.shape[0])
 
     if configs.shape[1] > 4:
-        print "\n WARNING: Specify additional attributes manually."
+        print("\n WARNING: Specify additional attributes manually.")
 
     fid.write('# a b m n \n')
 
@@ -569,7 +670,7 @@ def write_configs(fname, elecs, configs):
 def create2Dconfs(nel, ds=1):
     def create2Dint(nel, ds):
         c = 1  # counter
-        ints = range(nel - (2 * ds) - 1)
+        ints = list(range(nel - (2 * ds) - 1))
         confs = []
         for i in ints:
             i += 1
@@ -586,7 +687,7 @@ def create2Dconfs(nel, ds=1):
 
     if type(ds) == int:
         if ds > nel / 2:
-            print "WARNING: dipole interval of %s is too large!" % ds
+            print(("WARNING: dipole interval of %s is too large!" % ds))
             confs = []
         else:
             confs = create2Dint(nel, ds)
@@ -594,12 +695,12 @@ def create2Dconfs(nel, ds=1):
         confs = []
         for i, d in enumerate(ds):
             if d > nel / 2:
-                print "WARNING: dipole interval of %s is too large!" % d
+                print(("WARNING: dipole interval of %s is too large!" % d))
                 continue
             else:
                 confs.append(create2Dint(nel, d))
         confs = np.vstack(confs)
-    print "%s configurations generated." % len(confs)
+    print(("%s configurations generated." % len(confs)))
     return confs
 
 
@@ -619,14 +720,15 @@ def create2Dxhconfs(nel, ds=1, inhole=False, bipole=False):
                 b = a + ds
                 m = bh2[j]
                 n = m + ds
-                confs.append((a, b, m, n))
-                confs.append((a, m, b, n))
-
+                if not bipole:
+                    confs.append((a, b, m, n))
+                else:
+                    confs.append((a, m, b, n))
         return np.asarray(confs)
 
     if type(ds) == int:
         if ds > nel - 1:
-            print "WARNING: dipole interval of %s is too large!" % ds
+            print(("WARNING: dipole interval of %s is too large!" % ds))
             confs = []
         else:
             confs = createxhint(nel, ds)
@@ -634,7 +736,7 @@ def create2Dxhconfs(nel, ds=1, inhole=False, bipole=False):
         confs = []
         for i, d in enumerate(ds):
             if d > nel - 1:
-                print "WARNING: dipole interval of %s is too large!" % d
+                print(("WARNING: dipole interval of %s is too large!" % d))
                 continue
             else:
                 confs.append(createxhint(nel, d))
@@ -642,7 +744,7 @@ def create2Dxhconfs(nel, ds=1, inhole=False, bipole=False):
     if inhole:
         inconfs = create2Dconfs(nel, ds)
         confs = np.vstack((confs, inconfs, inconfs + nel))
-    print "%s configurations generated." % len(confs)
+    print(("%s configurations generated." % len(confs)))
     return confs
 
 
@@ -698,10 +800,10 @@ def create4PFullComplete(nel):
     confs = []
     for i in range(4, nel + 1):
         compl = create4PComplete(i)
-        combs = list(itertools.combinations(range(1, nel + 1), i))
+        combs = list(itertools.combinations(list(range(1, nel + 1)), i))
         confs.extend(replace_confs(combs, compl))
 
     confs = unique_rows(np.asarray(confs))
 
-    print "Created circulating dipole sheme with %d configurations for %d electrodes." % (len(confs), nel)
+    print(("Created circulating dipole sheme with %d configurations for %d electrodes." % (len(confs), nel)))
     return confs

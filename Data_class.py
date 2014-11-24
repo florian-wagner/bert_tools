@@ -16,7 +16,7 @@ class Data:
         """
 
         if verbose:
-            print "Reading in %s... \n" % filename
+            print(("Reading in %s... \n" % filename))
         file = open(filename)
 
         self.eleccount = int(file.readline())
@@ -53,7 +53,7 @@ class Data:
         self.elecs = pd.DataFrame(self.elecs, columns=elecs_ix)
 
         if verbose:
-            print self._string_
+            print((self._string_))
 
     def __str__(self):
         return self._string_

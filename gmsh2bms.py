@@ -46,7 +46,7 @@ def readGmsh(fname, verbose=False):
 
     inNodes, inElements, ncount, ecount = 0, 0, 0, 0
     fid = open(fname)
-    if verbose: print 'Reading %s... \n' % fname
+    if verbose: print(('Reading %s... \n' % fname))
 
     for line in fid:
 
@@ -60,14 +60,14 @@ def readGmsh(fname, verbose=False):
             if inNodes == 1:
                 if len(line.split()) == 1:
                     nodes = np.zeros((int(line), 3))
-                    if verbose: print '  Nodes: %s' % int(line)
+                    if verbose: print(('  Nodes: %s' % int(line)))
                 else:
                     nodes[ncount, :] = np.array(line.split(), 'float')[1:]
                     ncount += 1
 
             elif inElements == 1:
                 if len(line.split()) == 1:
-                    if verbose: print '  Entries: %s' % int(line)
+                    if verbose: print(('  Entries: %s' % int(line)))
                     points, lines, triangles, tets = [], [], [], []
 
                 else:
@@ -90,11 +90,11 @@ def readGmsh(fname, verbose=False):
     tets = np.asarray(tets)
 
     if verbose:
-        print '    Points: %s' % len(points)
-        print '    Lines: %s' % len(lines)
-        print '    Triangles: %s' % len(triangles)
-        print '    Tetrahedra: %s \n' % len(tets)
-        print 'Creating mesh object... \n'
+        print(('    Points: %s' % len(points)))
+        print(('    Lines: %s' % len(lines)))
+        print(('    Triangles: %s' % len(triangles)))
+        print(('    Tetrahedra: %s \n' % len(tets)))
+        print('Creating mesh object... \n')
 
     # check dimension
     if len(tets) == 0:
@@ -102,7 +102,7 @@ def readGmsh(fname, verbose=False):
         zero_dim = np.abs(nodes.sum(0)).argmin()  # identify zero dimension
     else:
         dim, bounds, cells = 3, triangles, tets
-    if verbose: print '  Dimension: %s-D' % dim
+    if verbose: print(('  Dimension: %s-D' % dim))
 
     # creating instance of GIMLI::Mesh class
     mesh = g.Mesh(dim)
@@ -116,8 +116,8 @@ def readGmsh(fname, verbose=False):
     if verbose:
         bound_types = np.unique(bounds[:,dim])
         regions = np.unique(cells[:,dim+1])
-        print '  Regions: %s ' % len(regions) + str(tuple(regions))
-        print '  Boundary types: %s ' % len(bound_types) + str(tuple(bound_types))
+        print(('  Regions: %s ' % len(regions) + str(tuple(regions))))
+        print(('  Boundary types: %s ' % len(bound_types) + str(tuple(bound_types))))
 
     for node in nodes:
         if dim == 2: mesh.createNode(node[0], node[3-zero_dim], 0)
@@ -149,17 +149,17 @@ def readGmsh(fname, verbose=False):
     if verbose:
         points = np.asarray(points)
         node_types = np.unique(points[:,1])
-        print '  Marked nodes: %s ' % len(points) + str(tuple(node_types))
-        print '\nDone. \n'
-        print '  ' + str(mesh)
+        print(('  Marked nodes: %s ' % len(points) + str(tuple(node_types))))
+        print('\nDone. \n')
+        print(('  ' + str(mesh)))
 
     return mesh
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        print "Reads Gmsh ASCII file (*.msh) and returns binary mesh (*.bms) for BERT + VTK file. \n"
-        print "Usage: python %s filename" % sys.argv[0]
-        print readGmsh.func_doc[-688:]
+        print("Reads Gmsh ASCII file (*.msh) and returns binary mesh (*.bms) for BERT + VTK file. \n")
+        print(("Usage: python %s filename" % sys.argv[0]))
+        print((readGmsh.__doc__[-688:]))
     else:
         t_0 = time.time()
         mesh = readGmsh(sys.argv[1], verbose=True)
@@ -168,4 +168,4 @@ if __name__ == '__main__':
         elapsed = time.time() - t_0
         m, s = divmod(elapsed, 60)
         h, m = divmod(m, 60)
-        print "\nElapsed run time: %02dh %02dmin %02dsec" % (h, m, s)
+        print(("\nElapsed run time: %02dh %02dmin %02dsec" % (h, m, s)))

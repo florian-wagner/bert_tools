@@ -10,8 +10,8 @@ from progressbar import *
 import scipy.spatial.distance as d
 from scipy.stats import scoreatpercentile
 from scipy import linalg as lin
-import stopwatch as t
-from bert_tools import *
+from . import stopwatch as t
+from .bert_tools import *
 import matplotlib.pyplot as plt
 
 class Sens:
@@ -35,7 +35,7 @@ class Sens:
         if ohm: self.assign_ohmfile(ohm)
         self.size = 9.31323e-10 * self.sens.nbytes
         self.istransformed = None
-        print self
+        print(self)
 
     def _loadsens(self, fname):
         """
@@ -50,7 +50,7 @@ class Sens:
 
         for i in range(ndata):
             S[i, :] = np.fromfile(fid, 'float', ncells)
-        print fname + " loaded."
+        print((fname + " loaded."))
         self.ndata = ndata
         self.ncells = ncells
         return S
@@ -68,17 +68,17 @@ class Sens:
     def check_rowsums(self):
         """ Check if row_sums are equal to 1 (Friedel, 2003) """
         if self.istransformed:
-            print "WARNING: Jacobian is transformed."
+            print("WARNING: Jacobian is transformed.")
             pass
         
         self.rowsums = self.sens.sum(axis=1)
-        print "Min: %s" % self.rowsums.min()
-        print "Max: %s" % self.rowsums.max()
-        print "Mean: %s" % self.rowsums.mean()
+        print(("Min: %s" % self.rowsums.min()))
+        print(("Max: %s" % self.rowsums.max()))
+        print(("Mean: %s" % self.rowsums.mean()))
 
     def compute_cumsum(self):
         """ Compute data-weighted cumulative sensitivity after Kemna (2000) """
-        print "Computing data-weighted cumulative sensitivity..."
+        print("Computing data-weighted cumulative sensitivity...")
         t.start()
         J = np.asmatrix(self.sens)
         Wd = np.diag(np.ones(self.ndata, dtype='int'))
@@ -87,7 +87,7 @@ class Sens:
 
     def compute_linind(self):
         """ Compute linear independency of sensitivities """
-        print 'Computing linear independency...'
+        print('Computing linear independency...')
         t.start()
         length = len(self.sens)
         self.linind = np.zeros((length, length))
@@ -102,7 +102,7 @@ class Sens:
 
     def compute_res(self, alpha=0.05):
         """ Compute formal model resolution matrix """
-        print "Computing model resolution matrix..."
+        print("Computing model resolution matrix...")
         t.start()
         C = np.diag(alpha * np.ones(self.ncells, dtype='int'))
         J = np.asmatrix(self.sens)
@@ -114,7 +114,7 @@ class Sens:
         Normalize sensitivity matrix and remove numerical effects (upper and lower perc)
         """
         if not hasattr(self, 'isnormalized'):
-            print "Normalizing sensitivity matrix..."
+            print("Normalizing sensitivity matrix...")
             pbar = ProgressBar(widgets=[Percentage(), Bar()],
                                maxval=np.size(self.sens, 0)).start()
             for i in range(np.size(self.sens, 0)):
@@ -130,7 +130,7 @@ class Sens:
 
             self.isnormalized = True
         else:
-            print "Sensitivity matrix already normalized."
+            print("Sensitivity matrix already normalized.")
 
     def plot(self, cfg, cmap='RdBu_r', cmin=-1, cmax=1,
              clab='Normalized Sensitivity', **kwargs):
@@ -157,7 +157,7 @@ class Sens:
                                             patchA=None, relpos=arrowpos, alpha=0.75,
                                             ))
         else:
-            print "No ohmfile assigned."
+            print("No ohmfile assigned.")
         return fig
 
     def plot_linind(self):
@@ -176,7 +176,7 @@ class Sens:
         """
         configs = self.configs(cfgs)
 
-        print "Writing %s... \n" % fname
+        print(("Writing %s... \n" % fname))
         fid = open(fname, 'w')
         fid.write('%d \n' % self.elecs.shape[0])
 
@@ -185,7 +185,7 @@ class Sens:
         elif self.elecs.shape[1] == 3:
             fid.write('# x y z \n')
         else:
-            print "WARNING: Wrong electrode dimension."
+            print("WARNING: Wrong electrode dimension.")
 
         for i in self.elecs:
             for j in i:
@@ -195,7 +195,7 @@ class Sens:
         fid.write('%d \n' % configs.shape[0])
 
         if configs.shape[1] > 4:
-            print "\n WARNING: Specify additional attributes manually."
+            print("\n WARNING: Specify additional attributes manually.")
 
         fid.write('# a b m n \n')
 
