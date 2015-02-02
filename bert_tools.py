@@ -21,7 +21,8 @@ from matplotlib.patheffects import withStroke
 import math
 from .pbar import ProgressBar
 
-def publify(fig_width=None, fig_height=None, columns=1, dim='horizontal', fontsize=8, context='paper', grid='white'):
+
+def publify(fig_width=None, fig_height=None, columns=1, dim='horizontal', fontsize=7, context='paper', grid='white'):
     """
     Set up matplotlib parameters for paper quality.
     Call this before plotting a figure.
@@ -75,11 +76,13 @@ def publify(fig_width=None, fig_height=None, columns=1, dim='horizontal', fontsi
     'font.family': 'sans-serif',
     'font.sans-serif': 'Arial',
     'text.color': almost_black,
+    'xtick.color': almost_black,
+    'ytick.color': almost_black,
     # Ticks
-    'xtick.major.pad': 6 * scale,
-    'xtick.minor.pad': 6 * scale,
-    'ytick.major.pad': 6 * scale,
-    'ytick.minor.pad': 6 * scale,
+    'xtick.major.pad': 4 * scale,
+    'xtick.minor.pad': 4 * scale,
+    'ytick.major.pad': 4 * scale,
+    'ytick.minor.pad': 4 * scale,
     "xtick.major.width": 1 * scale,
     "ytick.major.width": 1 * scale,
     "xtick.minor.width": .5 * scale,
@@ -100,12 +103,12 @@ def publify(fig_width=None, fig_height=None, columns=1, dim='horizontal', fontsi
     'savefig.pad_inches'  : 0.05,
     'axes.axisbelow': False,
     'axes.edgecolor': almost_black,
+    'axes.labelcolor': almost_black,
     'axes.facecolor': 'white',
     'axes.grid': False,
     'axes.color_cycle': ['#348ABD', '#8EBA42', '#E24A33',  '#FBC15E', '#FFB5B8', '#988ED5', '#777777'],
     'grid.linestyle': '-',
     'image.cmap': 'Spectral_r',
-    'legend.frameon': False,
     'legend.numpoints': 1,
     'legend.scatterpoints': 1,
     'lines.solid_capstyle': 'round',

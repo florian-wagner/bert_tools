@@ -55,5 +55,34 @@ class Data:
         if verbose:
             print((self._string_))
 
+    def save(self, filename):
+        """ Save DataFrame to unified data format. """
+
+        f = open(filename, 'w')
+        f.write("%d\n" % self.eleccount)
+        for key in self.elecs.keys():
+            f.write("%s " % key)
+        f.write("\n")
+        for row in self.elecs.itertuples(index=False):
+            for val in row:
+                f.write("%.3f " % val)
+            f.write("\n")
+        f.write("%d\n" % self.datacount)
+        for key in self.data.keys():
+            f.write("%s " % key)
+        f.write("\n")
+        for row in self.data.itertuples(index=False):
+            for i, val in enumerate(row):
+                if type(val) is np.float64:
+                    if i < 4: # Account for ABMN TODO: make more elegant
+                        f.write("%d " % val)
+                    else:
+                        f.write("%.3f " % val)
+                else:
+                    f.write("0.0 ")
+
+            f.write("\n")
+        f.close()
+
     def __str__(self):
         return self._string_

@@ -64,13 +64,13 @@ class Sens:
 
     def assign_ohmfile(self, fname):
         self.elecs, self.configs = read_ohm(fname)
-    
+
     def check_rowsums(self):
         """ Check if row_sums are equal to 1 (Friedel, 2003) """
         if self.istransformed:
             print("WARNING: Jacobian is transformed.")
             pass
-        
+
         self.rowsums = self.sens.sum(axis=1)
         print(("Min: %s" % self.rowsums.min()))
         print(("Max: %s" % self.rowsums.max()))
