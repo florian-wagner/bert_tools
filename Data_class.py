@@ -60,6 +60,7 @@ class Data:
 
         f = open(filename, 'w')
         f.write("%d\n" % self.eleccount)
+        f.write("# ")
         for key in self.elecs.keys():
             f.write("%s " % key)
         f.write("\n")
@@ -68,6 +69,7 @@ class Data:
                 f.write("%.3f " % val)
             f.write("\n")
         f.write("%d\n" % self.datacount)
+        f.write("# ")
         for key in self.data.keys():
             f.write("%s " % key)
         f.write("\n")
