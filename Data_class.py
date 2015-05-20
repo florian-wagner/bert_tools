@@ -66,7 +66,7 @@ class Data:
         f.write("\n")
         for row in self.elecs.itertuples(index=False):
             for val in row:
-                f.write("%.3f " % val)
+                f.write("%5.3f " % val)
             f.write("\n")
         f.write("%d\n" % self.datacount)
         f.write("# ")
@@ -79,7 +79,7 @@ class Data:
                     if i < 4: # Account for ABMN TODO: make more elegant
                         f.write("%d " % val)
                     else:
-                        f.write("%.3f " % val)
+                        f.write("%E " % val)
                 else:
                     f.write("0.0 ")
 

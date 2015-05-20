@@ -10,6 +10,7 @@ by fwagner@gfz-potsdam.de
 
 """
 
+import pybert as pb
 import numpy as np
 import itertools
 import matplotlib as mpl
@@ -21,8 +22,48 @@ from matplotlib.patheffects import withStroke
 import math
 from .pbar import ProgressBar
 
+def superSort(inData):
+    """
+        Sort all data with a<b<m<n. And return the new sorted dataset.
+    """
 
-def publify(fig_width=None, fig_height=None, columns=1, dim='horizontal', fontsize=7, context='paper', grid='white'):
+    data = pb.DataContainerERT(inData)
+    for i in range(data.size()):
+        if data('a')[i] > data('b')[i]:
+            data('b')[i] = data('a')[i]
+            data('a')[i] = inData('b')[i]
+            data('r')[i] = -data('r')[i]
+
+        if data('m')[i] > data('n')[i]:
+            data('m')[i] = data('n')[i]
+            data('n')[i] = inData('m')[i]
+            data('r')[i] = -data('r')[i]
+
+        if data('a')[i] > data('m')[i]:
+            mtmp = data('m')[i]
+            ntmp = data('n')[i]
+            data('m')[i] = data('a')[i]
+            data('n')[i] = data('b')[i]
+            data('a')[i] = mtmp
+            data('b')[i] = ntmp
+
+    return data
+
+def boxprint(s, sym="#", length=80):
+    """ Print string centered in box. """
+    row = sym * length
+    centered = s.center(length - 2)
+    print("\n".join((row, centered.join((sym, sym)), row)))
+
+
+def publify(
+        fig_width=None,
+        fig_height=None,
+        columns=1,
+        dim='horizontal',
+        fontsize=7,
+        context='paper',
+        grid='white'):
     """
     Set up matplotlib parameters for paper quality.
     Call this before plotting a figure.
@@ -41,7 +82,7 @@ def publify(fig_width=None, fig_height=None, columns=1, dim='horizontal', fontsi
     dark_gray = ".15"
     light_gray = ".8"
 
-    assert(columns in [1,1.5,2])
+    assert(columns in [1, 1.5, 2])
 
     if fig_width is None:
         # width in inches
@@ -59,59 +100,59 @@ def publify(fig_width=None, fig_height=None, columns=1, dim='horizontal', fontsi
         else:
             fig_height = fig_width * golden_mean
 
-    palette=["#4C72B0", "#55A868", "#C44E52",
-             "#8172B2", "#CCB974", "#64B5CD"]
+    palette = ["#4C72B0", "#55A868", "#C44E52",
+               "#8172B2", "#CCB974", "#64B5CD"]
 
     almost_black = '#262626'
 
     params = {
-    # Font
-    'font.size': fontsize * scale,
-    'axes.labelsize': fontsize * scale,
-    'axes.titlesize': fontsize * scale,
-    'font.size': fontsize * scale,
-    'legend.fontsize': fontsize * scale,
-    'xtick.labelsize': fontsize * scale,
-    'ytick.labelsize': fontsize * scale,
-    'font.family': 'sans-serif',
-    'font.sans-serif': 'Arial',
-    'text.color': almost_black,
-    'xtick.color': almost_black,
-    'ytick.color': almost_black,
-    # Ticks
-    'xtick.major.pad': 4 * scale,
-    'xtick.minor.pad': 4 * scale,
-    'ytick.major.pad': 4 * scale,
-    'ytick.minor.pad': 4 * scale,
-    "xtick.major.width": 1 * scale,
-    "ytick.major.width": 1 * scale,
-    "xtick.minor.width": .5 * scale,
-    "ytick.minor.width": .5 * scale,
-    'xtick.major.size': 3 * scale,     # major tick size in points
-    'xtick.minor.size': 3 * scale,     # minor tick size in points
-    'ytick.major.size': 3 * scale,     # major tick size in points
-    'ytick.minor.size': 3 * scale,     # minor tick size in points
-    # Lines & Marker
-    'lines.markersize': 6 * scale,
-    'lines.linewidth': 0.6 * scale,
-    'axes.labelcolor': '.15',
-    'axes.linewidth': 1 * scale,
-    "grid.linewidth": 0.75 * scale,
-    "lines.linewidth": 1.25 * scale ,
-    "patch.linewidth": .3 * scale,
-    # Axes
-    'savefig.pad_inches'  : 0.05,
-    'axes.axisbelow': False,
-    'axes.edgecolor': almost_black,
-    'axes.labelcolor': almost_black,
-    'axes.facecolor': 'white',
-    'axes.grid': False,
-    'axes.color_cycle': ['#348ABD', '#8EBA42', '#E24A33',  '#FBC15E', '#FFB5B8', '#988ED5', '#777777'],
-    'grid.linestyle': '-',
-    'image.cmap': 'Spectral_r',
-    'legend.numpoints': 1,
-    'legend.scatterpoints': 1,
-    'lines.solid_capstyle': 'round',
+        # Font
+        'font.size': fontsize * scale,
+        'axes.labelsize': fontsize * scale,
+        'axes.titlesize': fontsize * scale,
+        'font.size': fontsize * scale,
+        'legend.fontsize': fontsize * scale,
+        'xtick.labelsize': fontsize * scale,
+        'ytick.labelsize': fontsize * scale,
+        'font.family': 'sans-serif',
+        'font.sans-serif': 'Arial',
+        'text.color': almost_black,
+        'xtick.color': almost_black,
+        'ytick.color': almost_black,
+        # Ticks
+        'xtick.major.pad': 4 * scale,
+        'xtick.minor.pad': 4 * scale,
+        'ytick.major.pad': 4 * scale,
+        'ytick.minor.pad': 4 * scale,
+        "xtick.major.width": 1 * scale,
+        "ytick.major.width": 1 * scale,
+        "xtick.minor.width": .5 * scale,
+        "ytick.minor.width": .5 * scale,
+        'xtick.major.size': 3 * scale,     # major tick size in points
+        'xtick.minor.size': 3 * scale,     # minor tick size in points
+        'ytick.major.size': 3 * scale,     # major tick size in points
+        'ytick.minor.size': 3 * scale,     # minor tick size in points
+        # Lines & Marker
+        'lines.markersize': 6 * scale,
+        'lines.linewidth': 0.6 * scale,
+        'axes.labelcolor': '.15',
+        'axes.linewidth': 1 * scale,
+        "grid.linewidth": 0.75 * scale,
+        "lines.linewidth": 1.25 * scale,
+        "patch.linewidth": .3 * scale,
+        # Axes
+        'savefig.pad_inches': 0.05,
+        'axes.axisbelow': False,
+        'axes.edgecolor': almost_black,
+        'axes.labelcolor': almost_black,
+        'axes.facecolor': 'white',
+        'axes.grid': False,
+        'axes.color_cycle': ['#348ABD', '#8EBA42', '#E24A33',  '#FBC15E', '#FFB5B8', '#988ED5', '#777777'],
+        'grid.linestyle': '-',
+        'image.cmap': 'Spectral_r',
+        'legend.numpoints': 1,
+        'legend.scatterpoints': 1,
+        'lines.solid_capstyle': 'round',
     }
 
     if grid.startswith("dark"):
@@ -128,6 +169,7 @@ def publify(fig_width=None, fig_height=None, columns=1, dim='horizontal', fontsi
 
     mpl.rcParams.update(params)
 
+
 def pubsize(width=3.55, dim='w', scale=1, fontsize=7):
     golden_mean = (1.0 + math.sqrt(5.0)) / 2.0
     width *= scale
@@ -136,18 +178,19 @@ def pubsize(width=3.55, dim='w', scale=1, fontsize=7):
     else:
         height = width * golden_mean
 
-    params = {# 'backend': 'ps',
-            'font.size'         : fontsize * scale,
-            'axes.labelsize'    : fontsize * scale,
-            'axes.titlesize'    : fontsize * scale,
-            'legend.fontsize'   : fontsize * scale,
-            'xtick.labelsize'   : fontsize * scale,
-            'ytick.labelsize'   : fontsize * scale,
+    params = {  # 'backend': 'ps',
+        'font.size': fontsize * scale,
+        'axes.labelsize': fontsize * scale,
+        'axes.titlesize': fontsize * scale,
+        'legend.fontsize': fontsize * scale,
+        'xtick.labelsize': fontsize * scale,
+        'ytick.labelsize': fontsize * scale,
     }
 
     plt.rcParams.update(params)
 
     return width, height
+
 
 def abmn(n):
     """
@@ -165,7 +208,7 @@ def abmn(n):
     return perms
 
 
-def add_inner_title(ax, title, loc, size=None, **kwargs):
+def add_inner_title(ax, title, loc=2, size=None, **kwargs):
     if size is None:
         size = dict(size=plt.rcParams['legend.fontsize'])
     at = AnchoredText(title, loc=loc, prop=size,
@@ -318,7 +361,10 @@ def int2mesh(data, mesh, method='cubic'):
     for i, cell in enumerate(mesh.cells()):
         cell_mids[i] = (cell.center()[0], cell.center()[1])
 
-    return griddata(data[:, :2], data[:, 2], cell_mids, fill_value=0, method=method)
+    return griddata(
+        data[
+            :, :2], data[
+            :, 2], cell_mids, fill_value=0, method=method)
 
 
 def read_ohm(filename):
@@ -451,9 +497,24 @@ def pole_bipole(n, c):
 
 
 def plotdata(
-    ax, mesh, data, cmap='Spectral_r', xlim=None, ylim=None, cmin=None,
-    cmax=None, xlab='$x$ (m)', ylab='Depth (m)', clab='', title='',
-        elecs=True, grid=True, bounds=False, orientation='vertical', rasterized=False, cbar=True):
+        ax,
+        mesh,
+        data,
+        cmap='Spectral_r',
+        xlim=None,
+        ylim=None,
+        cmin=None,
+        cmax=None,
+        xlab='$x$ (m)',
+        ylab='Depth (m)',
+        clab='',
+        title='',
+        elecs=True,
+        grid=True,
+        bounds=False,
+        orientation='vertical',
+        rasterized=False,
+        cbar=True):
     """
      Plot finite element data on triangular mesh
     """
@@ -461,24 +522,26 @@ def plotdata(
     for cell in mesh.cells():
         if (cell.shape().nodeCount() == 3):
             polys.append(
-                list(zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x()],
-                    [cell.node(0).y(), cell.node(1).y(), cell.node(2).y()])))
+                list(
+                    zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x()],
+                        [cell.node(0).y(), cell.node(1).y(), cell.node(2).y()])))
         elif (cell.shape().nodeCount() == 4):
             polys.append(
                 list(zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x(),
                      cell.node(3).x()],
-                    [cell.node(
-                        0).y(), cell.node(1).y(), cell.node(2).y(),
-                     cell.node(3).y()])))
+                         [cell.node(
+                             0).y(), cell.node(1).y(), cell.node(2).y(),
+                             cell.node(3).y()])))
         else:
-            print(("unknown shape to patch: ", cell.shape(), cell.shape().nodeCount()))
+            print(
+                ("unknown shape to patch: ", cell.shape(), cell.shape().nodeCount()))
 
     # Patch settings
     patches = mpl.collections.PolyCollection(polys, rasterized=rasterized)
     patches.set_antialiased(True)
     if grid:
         patches.set_linewidth(0.05)
-        #patches.set_edgecolor('0.5')
+        # patches.set_edgecolor('0.5')
         patches.set_edgecolor('0')
     else:
         patches.set_edgecolor('face')
@@ -515,7 +578,7 @@ def plotdata(
         lines = []
         for bound in [b for b in mesh.boundaries() if b.marker() > 1]:
             lines.append(list(zip([bound.node(0).x(), bound.node(1).x()],
-                             [bound.node(0).y(), bound.node(1).y()])))
+                                  [bound.node(0).y(), bound.node(1).y()])))
 
         lineCollection = mpl.collections.LineCollection(
             lines, rasterized=rasterized)
@@ -688,7 +751,7 @@ def create2Dconfs(nel, ds=1):
 
         return np.asarray(confs)
 
-    if type(ds) == int:
+    if isinstance(ds, int):
         if ds > nel / 2:
             print(("WARNING: dipole interval of %s is too large!" % ds))
             confs = []
@@ -729,7 +792,7 @@ def create2Dxhconfs(nel, ds=1, inhole=False, bipole=False):
                     confs.append((a, m, b, n))
         return np.asarray(confs)
 
-    if type(ds) == int:
+    if isinstance(ds, int):
         if ds > nel - 1:
             print(("WARNING: dipole interval of %s is too large!" % ds))
             confs = []
@@ -808,5 +871,6 @@ def create4PFullComplete(nel):
 
     confs = unique_rows(np.asarray(confs))
 
-    print(("Created circulating dipole sheme with %d configurations for %d electrodes." % (len(confs), nel)))
+    print(("Created circulating dipole sheme with %d configurations for %d electrodes." %
+          (len(confs), nel)))
     return confs
