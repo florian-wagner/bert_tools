@@ -21,7 +21,7 @@ from scipy.sparse import coo_matrix
 from matplotlib.offsetbox import AnchoredText
 from matplotlib.patheffects import withStroke
 import math
-from pbar import ProgressBar
+from .pbar import ProgressBar
 
 def superSort(inData):
     """
